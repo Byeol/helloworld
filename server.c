@@ -44,19 +44,30 @@ int main()
         perror("listen");
         goto error;
     }
-    acceptedSock = accept(serverSock, (struct sockaddr *)&Addr, &AddrSize);
-    if (acceptedSock == -1) {
-        perror("accept");
-        ret = -1;
-        goto error;
-    }
-    if ((ret = recv(acceptedSock, readBuf, MAX_DATA, 0)) <= 0) {
-        perror("recv");
-        ret = -1;
-    } else
-        printf("Read %d Bytes: '%s'\n", ret, readBuf);
 
-    close(acceptedSock);
+    {
+        acceptedSock = accept(serverSock, (struct sockaddr *)&Addr, &AddrSize);
+        if (acceptedSock == -1) {
+            perror("accept");
+            ret = -1;
+            goto error;
+        }
+
+        if ((ret = recv(acceptedSock, readBuf, MAX_DATA, 0)) <= 0) {
+            perror("recv");
+            ret = -1;
+            goto error;
+        } else
+            printf("Read %d Bytes: '%s'\n", ret, readBuf);
+
+        if ((ret = send(acceptedSock, readBuf, sizeof(readBuf), 0)) <= 0) {
+            perror("send");
+            ret = -1;
+        } else
+            printf("Wrote '%s' (%d Bytes)\n", readBuf, ret);
+
+        close(acceptedSock);
+    }
 error:
     close(serverSock);
 leave:
